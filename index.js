@@ -262,7 +262,7 @@ function getAll() {
  * @param  {string} arguments[1] Location of the database file (Optional)
  * @param  {string} arguments[2] They fey/field to retrieve.
  */
-function getField() {
+function getFieldValues() {
   let fname = "";
   let tableName = arguments[0];
   let callback;
@@ -313,7 +313,7 @@ function getField() {
  * @param  {string} arguments[1] Location of the database file (Optional)
  * @param  {string} arguments[2] They fey/field to retrieve.
  */
-function getByField() {
+function searchByField() {
   let fname = "";
   let tableName = arguments[0];
   let callback;
@@ -452,7 +452,7 @@ function count() {
  ```
  * @param {callback} FourthArgument Function callback
  */
-function getRows() {
+function filter() {
   let tableName = arguments[0];
   var fname = "";
   var callback;
@@ -530,7 +530,7 @@ function getRows() {
  * @param  {Function} arguments[4]  [Callback function]
  */
 // function updateRow(tableName, where, set, callback) {
-function updateRow() {
+function update() {
   let tableName = arguments[0];
   var fname = "";
   var where;
@@ -688,7 +688,7 @@ function search() {
  * @param {*} callback
  */
 // function deleteRow(tableName, where, callback) {
-function deleteRow() {
+function deleteOne() {
   let tableName = arguments[0];
 
   var fname = "";
@@ -775,7 +775,7 @@ function deleteRow() {
  * @param {*} callback
  */
 // function deleteRow(tableName, where, callback) {
-function deleteMultipleRows() {
+function deleteMany() {
   let tableName = arguments[0];
 
   var fname = "";
@@ -857,7 +857,7 @@ function deleteMultipleRows() {
  * @param {String} dbLocation - Table location path
  * @return {Boolean} checking result
  */
-function tableExists() {
+function exists() {
   let fName = "";
   if (arguments.length == 2) {
     // Given the database name and location
@@ -877,15 +877,15 @@ module.exports = {
   createTable,
   insertOne,
   getAll,
-  getRows,
-  updateRow,
-  getByField,
+  filter,
+  update,
+  searchByField,
   search,
-  deleteRow,
-  deleteMultipleRows,
+  deleteOne,
+  deleteMany,
   valid,
   clearTable,
-  getField,
+  getFieldValues,
   count,
-  tableExists,
+  exists,
 };

@@ -30,26 +30,19 @@ if (platform === "win32") {
   userData = path.join("var", "local", appName);
 }
 
+const defaultLocation = path.join(userData, "database");
+
 /**
  * Create a table | a json file
  * The second argument is optional, if ommitted, the file
  * will be created at the default location.
  * @param  {[string]} arguments[0] [Table name]
- * @param {[string]} arguments[1] [Location of the database file] (Optional)
- * @param {[function]} arguments[2] [Callbak ]
+ * @param {[function]} arguments[1] [Callback ]
  */
-// function createTable(tableName, callback) {
 function createTable() {
-  tableName = arguments[0];
-  var fname = "";
-  var callback;
-  if (arguments.length === 2) {
-    callback = arguments[1];
-    fname = path.join(userData, tableName + ".json");
-  } else if (arguments.length === 3) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[2];
-  }
+  const tableName = arguments[0];
+  const fname = path.join(defaultLocation, tableName + ".json");
+  const callback = arguments[1];
 
   // Check if the file with the tablename.json exists
   let exists = fs.existsSync(fname);
@@ -79,17 +72,8 @@ function createTable() {
  * Checks if a json file contains valid JSON string
  */
 function valid() {
-  var fName = "";
-  if (arguments.length == 2) {
-    // Given the database name and location
-    const dbName = arguments[0];
-    const dbLocation = arguments[1];
-    fName = path.join(dbLocation, dbName + ".json");
-  } else if (arguments.length == 1) {
-    const dbName = arguments[0];
-    fName = path.join(userData, dbName + ".json");
-  }
-
+  const dbName = arguments[0];
+  var fName = path.join(defaultLocation, dbName + ".json");
   const content = fs.readFileSync(fName, "utf-8");
   try {
     JSON.parse(content);
@@ -104,25 +88,17 @@ function valid() {
  * which uses timestamp as value.
  * There are 3 required arguments.
  * @param  {string} arguments[0]  [Table name]
- * @param  {string} arguments[1] [Location of the database file] (Optional)
- * @param  {Array} arguments[2] [Array of row objects]
- * @param  {Function} arguments[3] [Callback function]
+ * @param  {Array} arguments[1] [Array of row objects]
+ * @param  {Function} arguments[2] [Callback function]
  * @returns {Array} [Array of IDs of the inserted rows]
  */
 function insertMany() {
-  let tableName = arguments[0];
-  var fname = "";
+  let fname = path.join(userData, arguments[0] + ".json");
   var callback;
   var tableRows;
-  if (arguments.length === 3) {
-    callback = arguments[2];
-    fname = path.join(userData, arguments[0] + ".json");
-    tableRows = arguments[1];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[3];
-    tableRows = arguments[2];
-  }
+
+  tableRows = arguments[1];
+  callback = arguments[2];
 
   let exists = fs.existsSync(fname);
 
@@ -160,27 +136,17 @@ function insertMany() {
  * which uses timestamp as value.
  * There are 3 required arguments.
  * @param  {string} arguments[0]  [Table name]
- * @param  {string} arguments[1] [Location of the database file] (Optional)
- * @param  {string} arguments[2] [Row object]
- * @param  {Function} arguments[3] [Callback function]
+ * @param  {string} arguments[1] [Row object]
+ * @param  {Function} arguments[2] [Callback function]
  * @returns {(number|undefined)} [ID of the inserted row]
  */
 
 // function to insert one object (tableName, tableRow, callback) {
 function insertOne() {
   let tableName = arguments[0];
-  var fname = "";
-  var callback;
-  var tableRow;
-  if (arguments.length === 3) {
-    callback = arguments[2];
-    fname = path.join(userData, arguments[0] + ".json");
-    tableRow = arguments[1];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[3];
-    tableRow = arguments[2];
-  }
+  let tableRow = arguments[1];
+  let callback = arguments[2];
+  var fname = path.join(userData, arguments[0] + ".json");
 
   let exists = fs.existsSync(fname);
 
@@ -209,21 +175,9 @@ function insertOne() {
 }
 
 /**
- * Insert object to table. The object will be appended with the property, id
- * which uses timestamp as value.
- * There are 3 required arguments.
- * @param  {string} arguments[0]  [Table name]
- * @param  {string} arguments[1] [Location of the database file] (Optional)
- * @param  {string} arguments[2] [Row array]
- * @param  {Function} arguments[3] [Callback function]
- * @returns {(number|undefined)} [ID of the inserted row]
- */
-
-/**
  * Get all contents of the table/json file object
  * @param  {string} arguments[0] [Table name]
- * @param  {string} arguments[1] [Location of the database file] (Optional)
- * @param  {Function} arguments[2]  [callback function]
+ * @param  {Function} arguments[1]  [callback function]
  */
 // function getAll(tableName, callback) {
 function getAll() {
@@ -231,13 +185,8 @@ function getAll() {
   var callback;
   var tableName = arguments[0];
 
-  if (arguments.length === 2) {
-    fname = path.join(userData, tableName + ".json");
-    callback = arguments[1];
-  } else if (arguments.length === 3) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[2];
-  }
+  fname = path.join(userData, tableName + ".json");
+  callback = arguments[1];
 
   let exists = fs.existsSync(fname);
 
@@ -259,8 +208,7 @@ function getAll() {
 /**
  * Find rows of a given field/key.
  * @param  {string} arguments[0] Table name
- * @param  {string} arguments[1] Location of the database file (Optional)
- * @param  {string} arguments[2] They fey/field to retrieve.
+ * @param  {string} arguments[1] They fey/field to retrieve.
  */
 function getFieldValues() {
   let fname = "";
@@ -268,15 +216,9 @@ function getFieldValues() {
   let callback;
   let key;
 
-  if (arguments.length === 3) {
-    fname = path.join(userData, tableName + ".json");
-    callback = arguments[2];
-    key = arguments[1];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[3];
-    key = arguments[2];
-  }
+  fname = path.join(userData, tableName + ".json");
+  callback = arguments[2];
+  key = arguments[1];
 
   let exists = fs.existsSync(fname);
 
@@ -310,8 +252,7 @@ function getFieldValues() {
 /**
  * Find rows of a given field/key.
  * @param  {string} arguments[0] Table name
- * @param  {string} arguments[1] Location of the database file (Optional)
- * @param  {string} arguments[2] They fey/field to retrieve.
+ * @param  {string} arguments[1] They fey/field to retrieve.
  */
 function searchByField() {
   let fname = "";
@@ -319,15 +260,9 @@ function searchByField() {
   let callback;
   let key;
 
-  if (arguments.length === 3) {
-    fname = path.join(userData, tableName + ".json");
-    callback = arguments[2];
-    key = arguments[1];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[3];
-    key = arguments[2];
-  }
+  fname = path.join(userData, tableName + ".json");
+  callback = arguments[2];
+  key = arguments[1];
 
   let exists = fs.existsSync(fname);
 
@@ -361,21 +296,15 @@ function searchByField() {
 /**
  * Clears an existing table leaving an empty list in the json file.
  * @param  {string} arguments[0] [Table name]
- * @param  {string} arguments[1] [Location of the database file] (Optional)
- * @param  {Function} arguments[2]  [callback function]
+ * @param  {Function} arguments[1]  [callback function]
  */
 function clearTable() {
   let fname = "";
   let tableName = arguments[0];
   let callback;
 
-  if (arguments.length === 2) {
-    fname = path.join(userData, tableName + ".json");
-    callback = arguments[1];
-  } else if (arguments.length === 3) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    callback = arguments[2];
-  }
+  fname = path.join(userData, tableName + ".json");
+  callback = arguments[1];
 
   let exists = fs.existsSync(fname);
 
@@ -401,48 +330,33 @@ function clearTable() {
 /**
  * Count the number of rows for a given table.
  * @param {string} FirstArgument Table name
- * @param {string} SecondArgument Location of the database file (Optional)
- * @param {callback} ThirdArgument Function callback
+ * @param {callback} SecondArgument Function callback
  */
 function count() {
   let tableName = arguments[0];
   let callback;
-  if (arguments.length === 2) {
-    callback = arguments[1];
-    getAll(tableName, (succ, data) => {
-      if (succ) {
-        callback(true, data.length);
-        return;
-      } else {
-        callback(false, data);
-        return;
-      }
-    });
-  } else if (arguments.length === 3) {
-    callback = arguments[2];
-    getAll(tableName, arguments[1], (succ, data) => {
-      if (succ) {
-        callback(true, data.length);
-        return;
-      } else {
-        callback(false, data);
-        return;
-      }
-    });
-  } else {
-    callback(
-      false,
-      "Wrong number of arguments. Must be either 2 or 3 arguments including callback function."
-    );
-    return;
-  }
+  callback = arguments[1];
+  getAll(tableName, (succ, data) => {
+    if (succ) {
+      callback(true, data.length);
+      return;
+    } else {
+      callback(false, data);
+      return;
+    }
+  });
+
+  callback(
+    false,
+    "Wrong number of arguments. Must be either 2 or 3 arguments including callback function."
+  );
+  return;
 }
 
 /**
  * Get row or rows that matched the given condition(s) in WHERE argument
  * @param {string} FirstArgument Table name
- * @param {string} SecondArgument Location of the database file (Optional)
- * @param {object} ThirdArgument Collection of conditions to be met
+ * @param {object} SecondArgument Collection of conditions to be met
  ```
  {
       key1: value1,
@@ -450,7 +364,7 @@ function count() {
       ...
  }
  ```
- * @param {callback} FourthArgument Function callback
+ * @param {callback} ThirdArgument Function callback
  */
 function filter() {
   let tableName = arguments[0];
@@ -458,15 +372,9 @@ function filter() {
   var callback;
   var where;
 
-  if (arguments.length === 3) {
-    fname = path.join(userData, tableName + ".json");
-    where = arguments[1];
-    callback = arguments[2];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    where = arguments[2];
-    callback = arguments[3];
-  }
+  fname = path.join(userData, tableName + ".json");
+  where = arguments[1];
+  callback = arguments[2];
 
   let exists = fs.existsSync(fname);
   let whereKeys;
@@ -524,10 +432,9 @@ function filter() {
 /**
  * Update a row or record which satisfies the where clause
  * @param  {[string]} arguments[0] [Table name]
- * @param {string} arguments[1] [Location of the database file] (Optional)
- * @param  {[object]} arguments[2]     [Objet for WHERE clause]
- * @param  {[object]} arguments[3]       [Object for SET clause]
- * @param  {Function} arguments[4]  [Callback function]
+ * @param  {[object]} arguments[1]     [Objet for WHERE clause]
+ * @param  {[object]} arguments[2]       [Object for SET clause]
+ * @param  {Function} arguments[3]  [Callback function]
  */
 // function updateRow(tableName, where, set, callback) {
 function update() {
@@ -537,17 +444,10 @@ function update() {
   var set;
   var callback;
 
-  if (arguments.length === 4) {
-    fname = path.join(userData, tableName + ".json");
-    where = arguments[1];
-    set = arguments[2];
-    callback = arguments[3];
-  } else if (arguments.length === 5) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    where = arguments[2];
-    set = arguments[3];
-    callback = arguments[4];
-  }
+  fname = path.join(userData, tableName + ".json");
+  where = arguments[1];
+  set = arguments[2];
+  callback = arguments[3];
 
   let exists = fs.existsSync(fname);
 
@@ -615,10 +515,9 @@ function update() {
 /**
  * Searching function
  * @param {string} arguments[0] Name of the table to search for
- * @param {string} arguments[1] [Location of the database file] (Optional)
- * @param {string} arguments[2] Name of the column/key to match
- * @param {object} arguments[3] The part of the value of the key that is being lookup
- * @param {function} arguments[4] Callback function
+ * @param {string} arguments[1] Name of the column/key to match
+ * @param {object} arguments[2] The part of the value of the key that is being lookup
+ * @param {function} arguments[3] Callback function
  */
 // function search(tableName, field, keyword, callback) {
 function search() {
@@ -628,17 +527,10 @@ function search() {
   var keyword;
   var callback;
 
-  if (arguments.length === 4) {
-    fname = path.join(userData, tableName + ".json");
-    field = arguments[1];
-    keyword = arguments[2];
-    callback = arguments[3];
-  } else if (arguments.length === 5) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    field = arguments[2];
-    keyword = arguments[3];
-    callback = arguments[4];
-  }
+  fname = path.join(userData, tableName + ".json");
+  field = arguments[1];
+  keyword = arguments[2];
+  callback = arguments[3];
 
   let exists = fs.existsSync(fname);
 
@@ -683,7 +575,6 @@ function search() {
 /**
  * Delete a row specified.
  * @param {*} tableName
- * @param {string} arguments[1] [Location of the database file] (Optional)
  * @param {*} where
  * @param {*} callback
  */
@@ -695,15 +586,9 @@ function deleteOne() {
   var where;
   var callback;
 
-  if (arguments.length === 3) {
-    fname = path.join(userData, tableName + ".json");
-    where = arguments[1];
-    callback = arguments[2];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    where = arguments[2];
-    callback = arguments[3];
-  }
+  fname = path.join(userData, tableName + ".json");
+  where = arguments[1];
+  callback = arguments[2];
 
   let exists = fs.existsSync(fname);
 
@@ -770,7 +655,6 @@ function deleteOne() {
 /**
  * Delete multiple rows specified.
  * @param {*} tableName
- * @param {string} arguments[1] [Location of the database file] (Optional)
  * @param {*} where
  * @param {*} callback
  */
@@ -782,15 +666,9 @@ function deleteMany() {
   var conditions;
   var callback;
 
-  if (arguments.length === 3) {
-    fname = path.join(userData, tableName + ".json");
-    conditions = arguments[1];
-    callback = arguments[2];
-  } else if (arguments.length === 4) {
-    fname = path.join(arguments[1], arguments[0] + ".json");
-    conditions = arguments[2];
-    callback = arguments[3];
-  }
+  fname = path.join(userData, tableName + ".json");
+  conditions = arguments[1];
+  callback = arguments[2];
 
   let exists = fs.existsSync(fname);
 
@@ -854,20 +732,14 @@ function deleteMany() {
 /**
  * Check table existence
  * @param {String} dbName - Table name
- * @param {String} dbLocation - Table location path
  * @return {Boolean} checking result
  */
 function exists() {
   let fName = "";
-  if (arguments.length == 2) {
-    // Given the database name and location
-    let dbName = arguments[0];
-    let dbLocation = arguments[1];
-    fName = path.join(dbLocation, dbName + ".json");
-  } else if (arguments.length == 1) {
-    let dbName = arguments[0];
-    fName = path.join(userData, dbName + ".json");
-  }
+  // Given the database name and location
+  let dbName = arguments[0];
+  let dbLocation = arguments[1];
+  fName = path.join(dbLocation, dbName + ".json");
 
   return fs.existsSync(fName);
 }
@@ -876,6 +748,7 @@ function exists() {
 module.exports = {
   createTable,
   insertOne,
+  insertMany,
   getAll,
   filter,
   update,

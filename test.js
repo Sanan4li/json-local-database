@@ -1,133 +1,165 @@
-const db = require("./index");
-const path = require("path");
-const fs = require("fs");
+const db = require("./optimized_by_gpt");
 
 const dbName = "test";
-const dbLocation = path.join(__dirname, "collections/");
 
-// Check if directory exist, create if not
-if (!fs.existsSync(dbLocation)) {
-  fs.mkdirSync(dbLocation);
-}
 
-// Create the table
 
-// db.createTable(dbName, dbLocation, (success, data) => {
+// Create a collection
+
+// db.createCollection(dbName, (success, message) => {
 //     if (success) {
-//         console.log(data);
+//         console.log(message);
 //     } else {
-//         console.log('Error creating table. ' + data);
+//         console.log("error. ",message);
 //     }
 // });
 
-// Put some dummy data
 
-// loop to 10 and insert data
-// for (let i = 0; i < 10; i++) {
-//   // create random user data
-//   let randomName = Math.random().toString(36).substring(7);
-//   let randomTime = new Date();
-//   let randomEmail = Math.random().toString(36).substring(7);
-//   randomEmail += "@gmail.com";
-//   const user = {
-//     name: randomName,
-//     time: randomTime,
-//     email: randomEmail,
-//   };
-//   db.insertTableContent(dbName, dbLocation, user, (succ, msg) => {
-//     if (succ) {
-//       console.log(msg);
-//     } else {
-//       console.log("An error has occurred. " + msg);
-//     }
-//   });
-// }
 
-// db.insertTableContent(
-//   dbName,
-//   dbLocation,
-//   {
-//     name: "Other test.",
-//     time: new Date(),
-//   },
-//   (succ, msg) => {}
-// );
+// Adding some dummy data
+
+//  adding data with insertOne
+// db.insertOne(dbName, { name: "Sanan", age: 24 }, (success, data, message) => {
+//   if (success) {
+//     console.log(data, message);
+//   }
+//   else{
+//      console.log("error. ",message);
+//   }
+// });
+
+
+//  adding data with insertMany
+// db.insertMany(dbName, [{ name: "Sanan", age: 24 }, { name: "Junaid", age: 32}, { name: "Sulman" }], (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   }
+//   else{
+//      console.log("error. ",message);
+//   }
+// });
+
+
 
 // Get all the data
-
-// db.getAll(dbName, dbLocation, (succ, data) => {
-//   if (succ) {
+// db.getAll(dbName, (success, data, message) => {
+//   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("The table test does not exist!");
+//     c console.log("error. ",message);
 //   }
 // });
+
 
 //  get the count of the total rows
+// db.count(dbName, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
 
-db.count(dbName, dbLocation, (succ, data) => {
-  if (succ) {
-    console.log(data);
-  } else {
-    console.log("An error has occurred.");
-    console.log(data);
-  }
-});
+//      console.log("error. ",message);
+//   }
+// });
 
 // search data
-// db.search(dbName, dbLocation, "name", "x4g4gl", (succ, data) => {
-//   if (succ) {
+// db.search("dbName", "name", "Junaid", (success, data, message) => {
+//   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("An error has occurred.");
-//     console.log(data);
+//      console.log("error. ",message);
 //   }
 // });
 
-// get a field value
-db.getByField(dbName, dbLocation, "age", (succ, data) => {
-  if (succ) {
-    console.log(data);
-  } else {
-    console.log("An error has occurred.");
-    console.log(data);
-  }
-});
 
-// delete rows;
-// db.deleteMultipleRows(dbName, dbLocation, { name: "Test." }, (succ, msg) => {
-//   if (succ) {
-//     console.log(msg);
-
-//     // Show the content now
-//     db.getAll(dbName, dbLocation, (succ, data) => {
-//       if (succ) {
-//         console.log(data);
-//       }
-//     });
-//   }
-// });
-
-// db.count(dbName, dbLocation, (succ, data) => {
-//   if (succ) {
+// get a field values
+// db.getFieldValues(dbName,  "age", (success, data, message) => {
+//   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("An error has occurred.");
-//     console.log(data);
+
+//     console.log("error. ",message);
 //   }
 // });
 
-// Delete all the data
-/* console.log('clearTable:')
-db.clearTable(dbName, dbLocation, (succ, msg) => {
-    if (succ) {
-        console.log(msg)
 
-        // Show the content now
-        db.getAll(dbName, dbLocation, (succ, data) => {
-            if (succ) {
-                console.log(data);
-            }
-        });
-    }
-}) */
+// search by field/key 
+// db.searchByField(dbName,  "age", (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+
+//     console.log("error. ",message);
+//   }
+// });
+
+// filter by condition
+
+// simple condition
+// db.filter(dbName,  {age: 24 }, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+
+//     console.log("error. ",message);
+//   }
+// });
+
+// // greater than condition
+// db.filter(dbName,  {age: { $gt: 20 }}, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+
+//     console.log("error. ",message);
+//   }
+// });
+
+
+// update data
+// db.update(dbName,  {age: 24 }, {age: 25 }, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+
+//     console.log("error. ",message);
+//   }
+// });
+
+
+// delete one 
+// db.deleteOne(dbName,  {age: 32 }, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ",message);
+//   }
+// })
+
+
+// delete one 
+// db.deleteMany(dbName,  {name: "Sulman" }, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ",message);
+//   }
+// })
+
+// clear collection
+// db.clearCollection(dbName, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ",message);
+//   }
+// })
+
+
+// delete collection
+// db.deleteCollection(dbName, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ",message);
+//   }
+// })

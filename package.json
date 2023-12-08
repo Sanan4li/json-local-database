@@ -1,26 +1,28 @@
 {
-    "name": "electron-db",
-    "version": "0.15.5",
-    "description": "Electron module that simulates database table operations which really just uses json file to store tables in the Application Folder.",
+    "name": "json-local-db",
+    "version": "0.0.1",
+    "description": "JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database.",
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
         "test": "node test.js"
     },
-    "author": "Alexius Academia <alexius.academia@gmail.com> (https://alexiusacademia.com)",
+    "author": "Sanan Ali <alisanan620@gmail.com> (https://Sanan4li.github.io)",
     "license": "MIT",
     "dependencies": {},
     "repository": {
         "type": "git",
-        "url": "https://github.com/alexiusacademia/electron-db"
+        "url": "https://github.com/Sanan4li/json-local-db"
     },
     "devDependencies": {},
     "keywords": [
-        "electron",
-        "database",
+        "json files",
         "json database",
+        "local database",
         "json table",
         "electron database",
-        "electron simple database"
+        "simple database", 
+        "node database",
+        "json local database"
     ]
 }

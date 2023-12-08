@@ -1,704 +1,512 @@
-// const electron = require('electron');
 const path = require("path");
 const fs = require("fs");
-const os = require("os");
+const { messages } = require("./constants");
 
-var pack = null;
-try {
-  pack = require("../../package.json");
-} catch (e) {}
+// Default location of the database
+const defaultLocation = path.join("local-db");
 
-const platform = os.platform();
 
-var appName = "";
-if (pack !== null) {
-  appName = pack.productName ? pack.productName : pack.name;
-}
-
-let userData = "";
-
-if (platform === "win32") {
-  userData = path.join(process.env.APPDATA, appName);
-} else if (platform === "darwin") {
-  userData = path.join(
-    process.env.HOME,
-    "Library",
-    "Application Support",
-    appName
-  );
-} else {
-  userData = path.join("var", "local", appName);
-}
-
-const defaultLocation = path.join(userData, "database");
 
 /**
- * Create a table | a json file
- * The second argument is optional, if ommitted, the file
+ * Create a collection | a json file
+ * The second argument is optional, if omitted, the file
  * will be created at the default location.
- * @param  {[string]} arguments[0] [Table name]
- * @param {[function]} arguments[1] [Callback ]
+ * @param {string} collectionName - Collection name
+ * @param {function} callback - Callback function
  */
-function createTable() {
-  const tableName = arguments[0];
-  const fname = path.join(defaultLocation, tableName + ".json");
-  const callback = arguments[1];
+function createCollection(collectionName, callback) {
+  // Check if directory exist, create if not
+  
+  if (!fs.existsSync(defaultLocation)) {
+     fs.mkdirSync(defaultLocation);
+  }
 
-  // Check if the file with the tablename.json exists
-  let exists = fs.existsSync(fname);
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+
+  // Check if the file with the Collection name.json exists
+  const exists = fs.existsSync(fname);
 
   if (exists) {
-    // The file exists, do not recreate the table/json file
-    callback(false, tableName + ".json already exists!");
+    callback(false, `${collectionName} ${messages.COLLECTION_EXISTS}`);
     return;
-  } else {
-    // Create an empty object and pass an empty array as value
-    let obj = new Object();
-    obj[tableName] = [];
+  }
 
-    // Write the object to json file
-    try {
-      fs.writeFileSync(fname, JSON.stringify(obj, null, 2), (err) => {});
-      callback(true, "Success!");
-      return;
-    } catch (e) {
-      callback(false, e.toString());
-      return;
-    }
+  // Create an empty object and pass an empty array as value
+  const obj = { [collectionName]: [] };
+
+  // Write the object to json file
+  try {
+    fs.writeFileSync(fname, JSON.stringify(obj, null, 2));
+    callback(true, `${collectionName} ${messages.COLLECTION_CREATED}`);
+  } catch (e) {
+    callback(false, e.toString());
   }
 }
+
+
+
 
 /**
  * Checks if a json file contains valid JSON string
+ * @param {string} dbName - Database name
+ * @returns {boolean} - True if valid, false otherwise
  */
-function valid() {
-  const dbName = arguments[0];
-  var fName = path.join(defaultLocation, dbName + ".json");
-  const content = fs.readFileSync(fName, "utf-8");
+function valid(dbName) {
+  const fName = path.join(defaultLocation, dbName + ".json");
+
   try {
+    const content = fs.readFileSync(fName, "utf-8");
     JSON.parse(content);
+    return true;
   } catch (e) {
     return false;
   }
-  return true;
 }
 
+
+
 /**
- * Insert objects to table. Each object will be appended with the property 'id',
+ * Insert object to collection. The object will be appended with the property, id
  * which uses timestamp as value.
  * There are 3 required arguments.
- * @param  {string} arguments[0]  [Table name]
- * @param  {Array} arguments[1] [Array of row objects]
- * @param  {Function} arguments[2] [Callback function]
- * @returns {Array} [Array of IDs of the inserted rows]
+ * @param {string} collectionName - Collection name
+ * @param {string} data - data object
+ * @param {Function} callback - Callback function
+ * @returns {(number|undefined)} - ID of the inserted data
  */
-function insertMany() {
-  let fname = path.join(userData, arguments[0] + ".json");
-  var callback;
-  var tableRows;
+function insertOne(collectionName, data, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
-  tableRows = arguments[1];
-  callback = arguments[2];
-
-  let exists = fs.existsSync(fname);
+  const exists = fs.existsSync(fname);
 
   if (exists) {
-    // Table | json parsed
-    let table = JSON.parse(fs.readFileSync(fname));
+    // collection | json parsed
+    const collection = JSON.parse(fs.readFileSync(fname));
 
-    let insertedIds = [];
+    const date = new Date();
+    const id = date.getTime();
+    data["id"] = id;
 
-    tableRows.forEach((tableRow) => {
-      let date = new Date();
-      let id = date.getTime();
-      tableRow["id"] = id;
-      table[tableName].push(tableRow);
+    collection[collectionName].push(data);
+
+    try {
+      fs.writeFileSync(fname, JSON.stringify(collection, null, 2));
+      callback(true, data, messages.SAVE_SUCCESS_MESSAGE);
+      return id;
+    } catch (e) {
+      callback(false, null,  messages.SAVE_ERROR_MESSAGE);
+      return;
+    }
+  }
+
+  callback(false, null,  messages.COLLECTION_NOT_EXISTS);
+  return;
+}
+
+
+
+
+
+
+/**
+ * Insert objects to collection. Each object will be appended with the property 'id',
+ * which uses timestamp as value.
+ * There are 3 required arguments.
+ * @param {string} collectionName - Collection name
+ * @param {Array} data - Array of row objects
+ * @param {Function} callback - Callback function
+ * @returns {Array} - Array of IDs of the inserted data
+ */
+function insertMany(collectionName, data, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    // collection | json parsed
+    const collection = JSON.parse(fs.readFileSync(fname));
+
+    const insertedIds = [];
+
+    data.forEach((data) => {
+      const date = new Date();
+      const id = date.getTime();
+      data["id"] = id;
+      collection[collectionName].push(data);
       insertedIds.push(id);
     });
 
     try {
-      fs.writeFileSync(fname, JSON.stringify(table, null, 2), (err) => {});
-
-      callback(true, "Objects written successfully!");
+      fs.writeFileSync(fname, JSON.stringify(collection, null, 2));
+      callback(true, data, messages.SAVE_SUCCESS_MESSAGE);
       return insertedIds;
     } catch (e) {
-      callback(false, "Error writing objects.");
+      callback(false, null,  messages.SAVE_ERROR_MESSAGE);
       return;
     }
   }
 
-  callback(false, "Table/json file doesn't exist!");
+  callback(false, null, `${collectionName} ${messages.COLLECTION_NOT_EXISTS}`);
   return;
 }
 
-/**
- * Insert object to table. The object will be appended with the property, id
- * which uses timestamp as value.
- * There are 3 required arguments.
- * @param  {string} arguments[0]  [Table name]
- * @param  {string} arguments[1] [Row object]
- * @param  {Function} arguments[2] [Callback function]
- * @returns {(number|undefined)} [ID of the inserted row]
- */
 
-// function to insert one object (tableName, tableRow, callback) {
-function insertOne() {
-  let tableName = arguments[0];
-  let tableRow = arguments[1];
-  let callback = arguments[2];
-  var fname = path.join(userData, arguments[0] + ".json");
-
-  let exists = fs.existsSync(fname);
-
-  if (exists) {
-    // Table | json parsed
-    let table = JSON.parse(fs.readFileSync(fname));
-
-    let date = new Date();
-    let id = date.getTime();
-    tableRow["id"] = id;
-
-    table[tableName].push(tableRow);
-
-    try {
-      fs.writeFileSync(fname, JSON.stringify(table, null, 2), (err) => {});
-
-      callback(true, "Object written successfully!");
-      return id;
-    } catch (e) {
-      callback(false, "Error writing object.");
-      return;
-    }
-  }
-  callback(false, "Table/json file doesn't exist!");
-  return;
-}
 
 /**
- * Get all contents of the table/json file object
- * @param  {string} arguments[0] [Table name]
- * @param  {Function} arguments[1]  [callback function]
+ * Get all contents of the collection/json file object
+ * @param {string} collectionName - Collection name
+ * @param {Function} callback - Callback function
  */
-// function getAll(tableName, callback) {
-function getAll() {
-  var fname = "";
-  var callback;
-  var tableName = arguments[0];
+function getAll(collectionName, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
-  fname = path.join(userData, tableName + ".json");
-  callback = arguments[1];
-
-  let exists = fs.existsSync(fname);
+  const exists = fs.existsSync(fname);
 
   if (exists) {
     try {
-      let table = JSON.parse(fs.readFileSync(fname));
-      callback(true, table[tableName]);
+      const collection = JSON.parse(fs.readFileSync(fname));
+      callback(true, collection[collectionName], null);
       return;
     } catch (e) {
-      callback(false, []);
+      callback(false, [], e);
       return;
     }
   } else {
-    callback(false, "Table file does not exist!");
+    callback(false, null,  `${collectionName} ${messages.COLLECTION_NOT_EXISTS}`);
     return;
   }
 }
 
-/**
- * Find rows of a given field/key.
- * @param  {string} arguments[0] Table name
- * @param  {string} arguments[1] They fey/field to retrieve.
- */
-function getFieldValues() {
-  let fname = "";
-  let tableName = arguments[0];
-  let callback;
-  let key;
 
-  fname = path.join(userData, tableName + ".json");
-  callback = arguments[2];
-  key = arguments[1];
 
-  let exists = fs.existsSync(fname);
-
-  if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    const rows = table[tableName];
-    let data = [];
-
-    let hasMatch = false;
-
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].hasOwnProperty(key)) {
-        data.push(rows[i][key]);
-        hasMatch = true;
-      }
-    }
-
-    if (!hasMatch) {
-      callback(false, "The key/field given does not exist.");
-      return;
-    }
-
-    callback(true, data);
-    return;
-  } else {
-    callback(false, "The table you are trying to access does not exist.");
-    return;
-  }
-}
 
 /**
- * Find rows of a given field/key.
- * @param  {string} arguments[0] Table name
- * @param  {string} arguments[1] They fey/field to retrieve.
+ * Count the number of rows for a given collection.
+ * @param {string} collectionName - Collection name
+ * @param {Function} callback - Function callback
  */
-function searchByField() {
-  let fname = "";
-  let tableName = arguments[0];
-  let callback;
-  let key;
-
-  fname = path.join(userData, tableName + ".json");
-  callback = arguments[2];
-  key = arguments[1];
-
-  let exists = fs.existsSync(fname);
-
-  if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    const rows = table[tableName];
-    let data = [];
-
-    let hasMatch = false;
-
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].hasOwnProperty(key)) {
-        data.push(rows[i]);
-        hasMatch = true;
-      }
-    }
-
-    if (!hasMatch) {
-      callback(false, "The key/field given does not exist.");
-      return;
-    }
-
-    callback(true, data);
-    return;
-  } else {
-    callback(false, "The table you are trying to access does not exist.");
-    return;
-  }
-}
-
-/**
- * Clears an existing table leaving an empty list in the json file.
- * @param  {string} arguments[0] [Table name]
- * @param  {Function} arguments[1]  [callback function]
- */
-function clearTable() {
-  let fname = "";
-  let tableName = arguments[0];
-  let callback;
-
-  fname = path.join(userData, tableName + ".json");
-  callback = arguments[1];
-
-  let exists = fs.existsSync(fname);
-
-  if (exists) {
-    let obj = new Object();
-    obj[tableName] = [];
-
-    // Write the object to json file
-    try {
-      fs.writeFileSync(fname, JSON.stringify(obj, null, 2), (err) => {});
-      callback(true, "Table cleared successfully!");
-      return;
-    } catch (e) {
-      callback(false, e.toString());
-      return;
-    }
-  } else {
-    callback(false, "The table you are trying to clear does not exist.");
-    return;
-  }
-}
-
-/**
- * Count the number of rows for a given table.
- * @param {string} FirstArgument Table name
- * @param {callback} SecondArgument Function callback
- */
-function count() {
-  let tableName = arguments[0];
-  let callback;
-  callback = arguments[1];
-  getAll(tableName, (succ, data) => {
-    if (succ) {
-      callback(true, data.length);
+function count(collectionName, callback) {
+  getAll(collectionName, (success, data, message) => {
+    if (success) {
+      callback(true, data.length, "Record found!");
       return;
     } else {
-      callback(false, data);
+      callback(false, data, message);
       return;
     }
   });
 
-  callback(
-    false,
-    "Wrong number of arguments. Must be either 2 or 3 arguments including callback function."
-  );
-  return;
 }
 
+
+
+
 /**
- * Get row or rows that matched the given condition(s) in WHERE argument
- * @param {string} FirstArgument Table name
- * @param {object} SecondArgument Collection of conditions to be met
- ```
- {
-      key1: value1,
-      key2: value2,
-      ...
- }
- ```
- * @param {callback} ThirdArgument Function callback
+ * Searching function
+ * @param {string} collectionName - Name of the collection to search for
+ * @param {string} field - Name of the column/key to match
+ * @param {string} keyword - The part of the value of the key that is being looked up
+ * @param {Function} callback - Callback function
  */
-function filter() {
-  let tableName = arguments[0];
-  var fname = "";
-  var callback;
-  var where;
+function search(collectionName, field, keyword, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
-  fname = path.join(userData, tableName + ".json");
-  where = arguments[1];
-  callback = arguments[2];
+  const exists = fs.existsSync(fname);
 
-  let exists = fs.existsSync(fname);
-  let whereKeys;
+  if (exists) {
+    try {
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
 
-  // Check if where is an object
-  if (Object.prototype.toString.call(where) === "[object Object]") {
-    // Check for number of keys
-    whereKeys = Object.keys(where);
-    if (whereKeys === 0) {
-      callback(false, "There are no conditions passed to the WHERE clause.");
+      const foundRows = rows.filter(
+        (row) =>
+          row.hasOwnProperty(field) &&
+          row[field]
+            .toString()
+            .toLowerCase()
+            .includes(keyword.toString().toLowerCase())
+      );
+
+      callback(true, foundRows, null);
+      return;
+    } catch (e) {
+      callback(false, e.toString(), messages.SOMETHING_WENT_WRONG);
       return;
     }
   } else {
-    callback(false, "WHERE clause should be an object.");
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
     return;
   }
+}
 
-  // Check if the json file exists, if it is, parse it.
+
+
+
+
+/**
+ * Find rows of a given field/key.
+ * @param {string} collectionName - Collection name
+ * @param {string} key - The key/field to retrieve.
+ * @param {Function} callback - Callback function
+ */
+function getFieldValues(collectionName, key, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    const collection = JSON.parse(fs.readFileSync(fname));
+    const rows = collection[collectionName];
+    const data = [];
+
+    let hasMatch = false;
+
+    for (const row of rows) {
+      if (row.hasOwnProperty(key)) {
+        data.push(row[key]);
+        hasMatch = true;
+      }
+    }
+
+    if (!hasMatch) {
+      callback(false, null, messages.KEY_NOT_EXIST);
+      return;
+    }
+
+    callback(true, data, null);
+    return;
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
+
+
+
+
+
+/**
+ * Find rows of a given field/key.
+ * @param {string} collectionName - Collection name
+ * @param {string} key - The key/field to retrieve.
+ * @param {Function} callback - Callback function
+ */
+function searchByField(collectionName, key, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    const collection = JSON.parse(fs.readFileSync(fname));
+    const rows = collection[collectionName];
+    const data = [];
+
+    let hasMatch = false;
+
+    for (const row of rows) {
+      if (row.hasOwnProperty(key)) {
+        data.push(row);
+        hasMatch = true;
+      }
+    }
+
+    if (!hasMatch) {
+      callback(false, null, messages.KEY_NOT_EXIST);
+      return;
+    }
+
+    callback(true, data, null);
+    return;
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
+
+
+
+
+
+/**
+ * Get row or rows that matched the given condition(s) in WHERE argument
+ * @param {string} collectionName - Collection name
+ * @param {object} where - Collection of conditions to be met
+ * @param {Function} callback - Function callback
+ */
+function filter(collectionName, where, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
   if (exists) {
     try {
-      let table = JSON.parse(fs.readFileSync(fname));
-      let rows = table[tableName];
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
 
-      let objs = [];
-
-      for (let i = 0; i < rows.length; i++) {
-        let matched = 0; // Number of matched complete where clause
-        for (var j = 0; j < whereKeys.length; j++) {
-          // Test if there is a matched key with where clause
-          if (rows[i].hasOwnProperty(whereKeys[j])) {
-            if (rows[i][whereKeys[j]] === where[whereKeys[j]]) {
-              matched++;
+      const objs = rows.filter((row) =>
+        Object.entries(where).every(([key, value]) => {
+          // Handle special operators like $gt (greater than) and $lt (less than)
+          if (typeof value === 'object') {
+            if (value.hasOwnProperty('$gt')) {
+              return row[key] > value['$gt'];
+            } else if (value.hasOwnProperty('$lt')) {
+              return row[key] < value['$lt'];
             }
           }
-        }
+          // Add more condition handlers for other operators if needed
 
-        // Check if all conditions in the WHERE clause are matched
-        if (matched === whereKeys.length) {
-          objs.push(rows[i]);
-        }
-      }
+          // Default: Equality check
+          return row[key] === value;
+        })
+      );
 
-      callback(true, objs);
+      callback(true, objs, null);
       return;
+    } catch (e) {
+      callback(false, null, e.toString());
+      return;
+    }
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
+
+
+
+
+
+/**
+ * Update a row or record which satisfies the where clause
+ * @param {string} collectionName - Collection name
+ * @param {object} where - Object for WHERE clause
+ * @param {object} set - Object for SET clause
+ * @param {Function} callback - Callback function
+ */
+function update(collectionName, where, set, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    try {
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
+
+      const matchedRow = rows.find((row) =>
+        Object.entries(where).every(([key, value]) => row[key] === value)
+      );
+
+      if (matchedRow) {
+       const updatedObject =  Object.assign(matchedRow, set);
+
+        fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
+        callback(true, updatedObject, messages.UPDATED_SUCCESSFULLY);
+        return;
+      } else {
+        callback(false, messages.RECORD_NOT_FOUND);
+        return;
+      }
     } catch (e) {
       callback(false, e.toString());
       return;
     }
   } else {
-    callback(false, "Table file does not exist!");
+    callback(false, messages.COLLECTION_NOT_EXISTS);
     return;
   }
 }
 
-/**
- * Update a row or record which satisfies the where clause
- * @param  {[string]} arguments[0] [Table name]
- * @param  {[object]} arguments[1]     [Objet for WHERE clause]
- * @param  {[object]} arguments[2]       [Object for SET clause]
- * @param  {Function} arguments[3]  [Callback function]
- */
-// function updateRow(tableName, where, set, callback) {
-function update() {
-  let tableName = arguments[0];
-  var fname = "";
-  var where;
-  var set;
-  var callback;
 
-  fname = path.join(userData, tableName + ".json");
-  where = arguments[1];
-  set = arguments[2];
-  callback = arguments[3];
 
-  let exists = fs.existsSync(fname);
 
-  let whereKeys = Object.keys(where);
-  let setKeys = Object.keys(set);
 
-  if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    let rows = table[tableName];
-
-    let matched = 0; // Number of matched complete where clause
-    let matchedIndex = 0;
-
-    for (var i = 0; i < rows.length; i++) {
-      for (var j = 0; j < whereKeys.length; j++) {
-        // Test if there is a matched key with where clause and single row of table
-        if (rows[i].hasOwnProperty(whereKeys[j])) {
-          if (rows[i][whereKeys[j]] === where[whereKeys[j]]) {
-            matched++;
-            matchedIndex = i;
-          }
-        }
-      }
-    }
-
-    if (matched === whereKeys.length) {
-      // All field from where clause are present in this particular
-      // row of the database table
-      try {
-        for (var k = 0; k < setKeys.length; k++) {
-          // rows[i][setKeys[k]] = set[setKeys[k]];
-          rows[matchedIndex][setKeys[k]] = set[setKeys[k]];
-        }
-
-        // Create a new object and pass the rows
-        let obj = new Object();
-        obj[tableName] = rows;
-
-        // Write the object to json file
-        try {
-          fs.writeFileSync(fname, JSON.stringify(obj, null, 2), (err) => {});
-
-          callback(true, "Success!");
-          return;
-        } catch (e) {
-          callback(false, e.toString());
-          return;
-        }
-
-        callback(true, rows);
-      } catch (e) {
-        callback(false, e.toString());
-        return;
-      }
-    } else {
-      callback(false, "Cannot find the specified record.");
-      return;
-    }
-  } else {
-    callback(false, "Table file does not exist!");
-    return;
-  }
-}
-
-/**
- * Searching function
- * @param {string} arguments[0] Name of the table to search for
- * @param {string} arguments[1] Name of the column/key to match
- * @param {object} arguments[2] The part of the value of the key that is being lookup
- * @param {function} arguments[3] Callback function
- */
-// function search(tableName, field, keyword, callback) {
-function search() {
-  let tableName = arguments[0];
-  var fname = "";
-  var field;
-  var keyword;
-  var callback;
-
-  fname = path.join(userData, tableName + ".json");
-  field = arguments[1];
-  keyword = arguments[2];
-  callback = arguments[3];
-
-  let exists = fs.existsSync(fname);
-
-  if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    let rows = table[tableName];
-
-    if (rows.length > 0) {
-      // Declare an empty list
-      let foundRows = [];
-
-      for (var i = 0; i < rows.length; i++) {
-        // Check if key exists
-        if (rows[i].hasOwnProperty(field)) {
-          // Make sure that an object is converted to string before
-          // applying toLowerCase()
-          let value = rows[i][field].toString().toLowerCase();
-          let n = value.search(keyword.toString().toLowerCase());
-
-          if (n !== -1) {
-            // The substring is found, add object to the list.
-            foundRows.push(rows[i]);
-          }
-        } else {
-          callback(false, 2);
-          return;
-        }
-      }
-
-      callback(true, foundRows);
-      return;
-    } else {
-      callback(false, []);
-      return;
-    }
-  } else {
-    callback(false, "Table file does not exist!");
-    return;
-  }
-}
 
 /**
  * Delete a row specified.
- * @param {*} tableName
- * @param {*} where
- * @param {*} callback
+ * @param {string} collectionName - Collection name
+ * @param {object} where - Object specifying the conditions for deletion
+ * @param {Function} callback - Callback function
  */
-// function deleteRow(tableName, where, callback) {
-function deleteOne() {
-  let tableName = arguments[0];
+function deleteOne(collectionName, where, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
-  var fname = "";
-  var where;
-  var callback;
-
-  fname = path.join(userData, tableName + ".json");
-  where = arguments[1];
-  callback = arguments[2];
-
-  let exists = fs.existsSync(fname);
-
-  let whereKeys = Object.keys(where);
+  const exists = fs.existsSync(fname);
 
   if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    let rows = table[tableName];
-
-    if (rows.length > 0) {
-      let matchedIndex = -1;
-
-      for (let i = 0; i < rows.length; i++) {
-        // Iterate through the rows
-        let isMatched = true;
-
-        for (var j = 0; j < whereKeys.length; j++) {
-          // Test if there is a matched key with where clause and single row of table
-          if (
-            !rows[i].hasOwnProperty(whereKeys[j]) ||
-            rows[i][whereKeys[j]] !== where[whereKeys[j]]
-          ) {
-            isMatched = false;
-            break;
-          }
-        }
-
-        if (isMatched) {
-          matchedIndex = i;
-          break;
-        }
-      }
-
-      if (matchedIndex === -1) {
-        callback(false, "Row does not exist!");
+    try {
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
+      const rowToDelete = rows.find((row) => {
+        return Object.entries(where).every(([key, value]) => row[key] === value);
+      })
+      const updatedRows = rows.filter(
+        (row) =>
+          !Object.entries(where).every(([key, value]) => row[key] === value)
+      );
+      
+      if (updatedRows.length === rows.length) {
+        callback(false, null, messages.RECORD_NOT_FOUND);
         return;
       }
 
-      rows.splice(matchedIndex, 1);
-
-      // Create a new object and pass the rows
-      let obj = new Object();
-      obj[tableName] = rows;
-
-      // Write the object to json file
-      try {
-        fs.writeFileSync(fname, JSON.stringify(obj, null, 2), (err) => {});
-        callback(true, "Row deleted successfully!");
-        return;
-      } catch (e) {
-        callback(false, e.toString());
-        return;
-      }
-    } else {
-      callback(false, "Table is empty!");
+      collection[collectionName] = updatedRows;
+      
+      fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
+      callback(true, rowToDelete, messages.RECORD_DELETED);
+      return;
+    } catch (e) {
+      callback(false, null, e.toString());
       return;
     }
   } else {
-    callback(false, "Table file does not exist!");
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
     return;
   }
 }
 
+
+
+
 /**
  * Delete multiple rows specified.
- * @param {*} tableName
- * @param {*} where
- * @param {*} callback
+ * @param {string} collectionName - Collection name
+ * @param {object} conditions - Object specifying the conditions for deletion
+ * @param {Function} callback - Callback function
  */
-// function deleteRow(tableName, where, callback) {
-function deleteMany() {
-  let tableName = arguments[0];
+function deleteMany(collectionName, conditions, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
-  var fname = "";
-  var conditions;
-  var callback;
-
-  fname = path.join(userData, tableName + ".json");
-  conditions = arguments[1];
-  callback = arguments[2];
-
-  let exists = fs.existsSync(fname);
+  const exists = fs.existsSync(fname);
 
   if (exists) {
-    let table = JSON.parse(fs.readFileSync(fname));
-    let rows = table[tableName];
+    try {
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
 
-    if (rows.length > 0) {
-      let matchedIndices = [];
-
-      for (let i = 0; i < rows.length; i++) {
-        let isMatched = true;
-
-        for (let conditionKey in conditions) {
-          if (
-            !rows[i].hasOwnProperty(conditionKey) ||
-            rows[i][conditionKey] !== conditions[conditionKey]
-          ) {
-            isMatched = false;
-            break;
-          }
-        }
+      const matchedIndices = rows.reduce((indices, row, index) => {
+        const isMatched = Object.entries(conditions).every(
+          ([key, value]) => row.hasOwnProperty(key) && row[key] === value
+        );
 
         if (isMatched) {
-          matchedIndices.push(i);
+          indices.push(index);
         }
-      }
+
+        return indices;
+      }, []);
+
+
+      const matchedRows = rows.filter((row) =>
+        Object.entries(conditions).every(
+          ([key, value]) => row.hasOwnProperty(key) && row[key] === value
+        )
+      );
+
 
       if (matchedIndices.length === 0) {
-        callback(false, "No matching rows found!");
+        callback(false, messages.RECORD_NOT_FOUND);
         return;
       }
 
@@ -706,47 +514,106 @@ function deleteMany() {
         rows.splice(matchedIndices[k], 1);
       }
 
-      // Create a new object and pass the rows
-      let obj = new Object();
-      obj[tableName] = rows;
+      // Update the existing collection with the modified rows
+      collection[collectionName] = rows;
 
       // Write the object to json file
-      try {
-        fs.writeFileSync(fname, JSON.stringify(obj, null, 2), (err) => {});
-        callback(true, "Rows deleted successfully!");
-        return;
-      } catch (e) {
-        callback(false, e.toString());
-        return;
-      }
-    } else {
-      callback(false, "Table is empty!");
+      fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
+
+      callback(true, matchedRows,  messages.RECORD_DELETED);
+      return;
+    } catch (e) {
+      callback(false, null, e.toString());
       return;
     }
   } else {
-    callback(false, "Table file does not exist!");
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
     return;
   }
 }
 
-/**
- * Check table existence
- * @param {String} dbName - Table name
- * @return {Boolean} checking result
- */
-function exists() {
-  let fName = "";
-  // Given the database name and location
-  let dbName = arguments[0];
-  let dbLocation = arguments[1];
-  fName = path.join(dbLocation, dbName + ".json");
 
+
+/**
+ * Check collection existence
+ * @param {string} dbName - Collection name
+ * @return {boolean} - Result of existence check
+ */
+function exists(dbName, defaultLocation) {
+  const fName = path.join(defaultLocation, dbName + ".json");
   return fs.existsSync(fName);
 }
 
+
+
+
+
+
+/**
+ * Clears an existing table leaving an empty list in the json file.
+ * @param {string} tableName - Table name
+ * @param {Function} callback - Callback function
+ */
+function clearCollection(tableName, callback) {
+  const fname = path.join(defaultLocation, tableName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    const obj = { [tableName]: [] };
+
+    // Write the object to json file
+    try {
+      fs.writeFileSync(fname, JSON.stringify(obj, null, 2));
+      callback(true,[],  messages.RECORD_DELETED);
+      return;
+    } catch (e) {
+      callback(false, null, e.toString());
+      return;
+    }
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
+
+
+
+
+/**  delete an existing collection/json file 
+* @param {string} collectionName - Collection name
+* @param {Function} callback - Callback function
+*/
+
+function deleteCollection(collectionName, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
+
+  const exists = fs.existsSync(fname);
+
+  if (exists) {
+    try {
+      fs.unlinkSync(fname);
+      callback(true, null, messages.COLLECTION_DELETED);
+      return;
+    } catch (e) {
+      callback(false, null, e.toString());
+      return;
+    }
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
+
+
+
+
+
+
+
 // Export the public available functions
 module.exports = {
-  createTable,
+  createCollection,
   insertOne,
   insertMany,
   getAll,
@@ -757,8 +624,9 @@ module.exports = {
   deleteOne,
   deleteMany,
   valid,
-  clearTable,
   getFieldValues,
   count,
   exists,
+  clearCollection,
+  deleteCollection
 };

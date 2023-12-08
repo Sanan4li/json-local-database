@@ -1,6 +1,6 @@
-const db = require("./optimized_by_gpt");
+const db = require("./index");
 
-const dbName = "test";
+const dbName = "users";
 
 
 
@@ -30,7 +30,7 @@ const dbName = "test";
 
 
 //  adding data with insertMany
-// db.insertMany(dbName, [{ name: "Sanan", age: 24 }, { name: "Junaid", age: 32}, { name: "Sulman" }], (success, data, message) => {
+// db.insertMany("users", [{ name: "Sanan", age: 24 }, { name: "Junaid", age: 32}, { name: "Sulman" }], (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   }
@@ -42,17 +42,17 @@ const dbName = "test";
 
 
 // Get all the data
-// db.getAll(dbName, (success, data, message) => {
+// db.getAll("users", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-//     c console.log("error. ",message);
+//     console.log("error. ",message);
 //   }
 // });
 
 
 //  get the count of the total rows
-// db.count(dbName, (success, data, message) => {
+// db.count("users", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -62,7 +62,7 @@ const dbName = "test";
 // });
 
 // search data
-// db.search("dbName", "name", "Junaid", (success, data, message) => {
+// db.search("users", "name", "Junaid", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -72,7 +72,7 @@ const dbName = "test";
 
 
 // get a field values
-// db.getFieldValues(dbName,  "age", (success, data, message) => {
+// db.getFieldValues("users",  "name", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -83,19 +83,19 @@ const dbName = "test";
 
 
 // search by field/key 
-// db.searchByField(dbName,  "age", (success, data, message) => {
-//   if (success) {
-//     console.log(data);
-//   } else {
+db.searchByField("users",  "age", (success, data, message) => {
+  if (success) {
+    console.log(data);
+  } else {
 
-//     console.log("error. ",message);
-//   }
-// });
+    console.log("error. ",message);
+  }
+});
 
 // filter by condition
 
 // simple condition
-// db.filter(dbName,  {age: 24 }, (success, data, message) => {
+// db.filter("users",  {age: 24 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -105,7 +105,7 @@ const dbName = "test";
 // });
 
 // // greater than condition
-// db.filter(dbName,  {age: { $gt: 20 }}, (success, data, message) => {
+// db.filter("users",  {age: { $gt: 20 }}, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -116,7 +116,7 @@ const dbName = "test";
 
 
 // update data
-// db.update(dbName,  {age: 24 }, {age: 25 }, (success, data, message) => {
+// db.update("users",  {age: 24 }, {age: 25 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -127,7 +127,7 @@ const dbName = "test";
 
 
 // delete one 
-// db.deleteOne(dbName,  {age: 32 }, (success, data, message) => {
+// db.deleteOne("users",  {age: 32 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -137,7 +137,7 @@ const dbName = "test";
 
 
 // delete one 
-// db.deleteMany(dbName,  {name: "Sulman" }, (success, data, message) => {
+// db.deleteMany("users",  {name: "Sulman" }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -146,7 +146,7 @@ const dbName = "test";
 // })
 
 // clear collection
-// db.clearCollection(dbName, (success, data, message) => {
+// db.clearCollection("users", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
@@ -156,7 +156,7 @@ const dbName = "test";
 
 
 // delete collection
-// db.deleteCollection(dbName, (success, data, message) => {
+// db.deleteCollection("users", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {

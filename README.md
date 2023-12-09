@@ -1,15 +1,15 @@
-# json-local-db
+# json-local-database
 
-**json-local-db** JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database..
+**json-local-database** JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database..
 
-This package creates a JSON file for each collection inside the application's `json-local-db` folder. The `json-local-db` folder is created when you create your first collection.
+This package creates a JSON file for each collection inside the application's `json-local-database` folder. The `json-local-database` folder is created when you create your first collection.
 
 ---
 
 **Table of Contents:**
 
 - [Installation](#installation)
-- [Using json-local-db](#using-json-local-db)
+- [Using json-local-database](#using-json-local-database)
 - [Creating a collection](#creating-a-collection)
 - [Inserting Single Object to a Collection](#inserting-single-object-to-a-collection)
 - [Inserting an Array of Objects to a Collection](#inserting-an-array-of-objects-to-a-collection)
@@ -35,24 +35,24 @@ This package creates a JSON file for each collection inside the application's `j
 The preferred way of installation is to install it locally on the application.
 
 ```javascript
-npm install json-local-db --save
+npm install json-local-database --save
 ```
 
 ---
 
-### **Using json-local-db**
+### **Using json-local-database**
 
 After installing the package, you can now use it in your application. To use it, just require it in your application.
 
 ```javascript
-const db = require("json-local-db");
+const db = require("json-local-database");
 ```
 
 ---
 
 ### **Creating a collection**
 
-The function `createCollection()` creates a json file `[collection].json` inside the application `json-local-db` folder. It will return an error if the collection/json file is already created.
+The function `createCollection()` creates a json file `[collection].json` inside the application `json-local-database` folder. It will return an error if the collection/json file is already created.
 
 ```javascript
 db.createCollection(dbName, callback(success, message)=>{});
@@ -61,7 +61,7 @@ db.createCollection(dbName, callback(success, message)=>{});
 #### Example
 
 ```javascript
-const db = require("json-local-db");
+const db = require("json-local-database");
 
 db.createCollection("users", (success, message) => {
   if (success) {
@@ -582,7 +582,7 @@ db.clearCollection("users", (success, data, message) => {
 
 ### **Delete a Collection**
 
-The function `db.deleteCollection()` deletes the collection and returns the success message. It deletes the physical file from the `json-local-db` folder.
+The function `db.deleteCollection()` deletes the collection and returns the success message. It deletes the physical file from the `json-local-database` folder.
 
 ```javascript
 db.deleteCollection("users", (success, message) => {

@@ -1,28 +1,28 @@
 {
-    "name": "json-local-db",
-    "version": "0.0.1",
-    "description": "JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database.",
-    "main": "index.js",
-    "scripts": {
-        "start": "node index.js",
-        "test": "node test.js"
-    },
-    "author": "Sanan Ali <alisanan620@gmail.com> (https://Sanan4li.github.io)",
-    "license": "MIT",
-    "dependencies": {},
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Sanan4li/json-local-db"
-    },
-    "devDependencies": {},
-    "keywords": [
-        "json files",
-        "json database",
-        "local database",
-        "json table",
-        "electron database",
-        "simple database", 
-        "node database",
-        "json local database"
-    ]
+  "name": "json-local-database",
+  "version": "0.0.1",
+  "description": "JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "author": "Sanan Ali <alisanan620@gmail.com> (https://Sanan4li.github.io)",
+  "license": "MIT",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sanan4li/json-local-database"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "json files",
+    "json database",
+    "local database",
+    "json table",
+    "electron database",
+    "simple database",
+    "node database",
+    "json local database"
+  ]
 }

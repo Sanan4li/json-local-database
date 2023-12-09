@@ -2,8 +2,6 @@ const db = require("./index");
 
 const dbName = "users";
 
-
-
 // Create a collection
 
 // db.createCollection(dbName, (success, message) => {
@@ -13,8 +11,6 @@ const dbName = "users";
 //         console.log("error. ",message);
 //     }
 // });
-
-
 
 // Adding some dummy data
 
@@ -28,7 +24,6 @@ const dbName = "users";
 //   }
 // });
 
-
 //  adding data with insertMany
 // db.insertMany("users", [{ name: "Sanan", age: 24 }, { name: "Junaid", age: 32}, { name: "Sulman" }], (success, data, message) => {
 //   if (success) {
@@ -39,8 +34,6 @@ const dbName = "users";
 //   }
 // });
 
-
-
 // Get all the data
 // db.getAll("users", (success, data, message) => {
 //   if (success) {
@@ -49,7 +42,6 @@ const dbName = "users";
 //     console.log("error. ",message);
 //   }
 // });
-
 
 //  get the count of the total rows
 // db.count("users", (success, data, message) => {
@@ -70,7 +62,6 @@ const dbName = "users";
 //   }
 // });
 
-
 // get a field values
 // db.getFieldValues("users",  "name", (success, data, message) => {
 //   if (success) {
@@ -81,26 +72,23 @@ const dbName = "users";
 //   }
 // });
 
-
-// search by field/key 
-db.searchByField("users",  "age", (success, data, message) => {
-  if (success) {
-    console.log(data);
-  } else {
-
-    console.log("error. ",message);
-  }
-});
+// search by field/key
+// db.searchByField("users", "age", (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ", message);
+//   }
+// });
 
 // filter by condition
 
 // simple condition
-// db.filter("users",  {age: 24 }, (success, data, message) => {
+// db.filter("users", { age: 24 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-
-//     console.log("error. ",message);
+//     console.log("error. ", message);
 //   }
 // });
 
@@ -114,52 +102,56 @@ db.searchByField("users",  "age", (success, data, message) => {
 //   }
 // });
 
-
-// update data
-// db.update("users",  {age: 24 }, {age: 25 }, (success, data, message) => {
+// update one object
+// db.updateOne("users", { age: 24 }, { age: 25 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-
-//     console.log("error. ",message);
+//     console.log("error. ", message);
 //   }
 // });
 
-
-// delete one 
-// db.deleteOne("users",  {age: 32 }, (success, data, message) => {
+// Example usage:
+// db.updateMany("users", { age: 32 }, { age: 25 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("error. ",message);
+//     console.log("Error. ", message);
 //   }
-// })
+// });
 
-
-// delete one 
-// db.deleteMany("users",  {name: "Sulman" }, (success, data, message) => {
+// delete one
+// db.deleteOne("users", { name: "Sulman" }, (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("error. ",message);
+//     console.log("error. ", message);
 //   }
-// })
+// });
+
+// delete one
+// db.deleteMany("users", { name: "Junaid" }, (success, data, message) => {
+//   if (success) {
+//     console.log(data);
+//   } else {
+//     console.log("error. ", message);
+//   }
+// });
 
 // clear collection
 // db.clearCollection("users", (success, data, message) => {
 //   if (success) {
 //     console.log(data);
 //   } else {
-//     console.log("error. ",message);
+//     console.log("error. ", message);
 //   }
-// })
-
+// });
 
 // delete collection
 // db.deleteCollection("users", (success, data, message) => {
 //   if (success) {
-//     console.log(data);
+//     console.log(data, message);
 //   } else {
-//     console.log("error. ",message);
+//     console.log("error. ", message);
 //   }
-// })
+// });

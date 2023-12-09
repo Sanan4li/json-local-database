@@ -5,8 +5,6 @@ const { messages } = require("./constants");
 // Default location of the database
 const defaultLocation = path.join("local-db");
 
-
-
 /**
  * Create a collection | a json file
  * The second argument is optional, if omitted, the file
@@ -16,13 +14,12 @@ const defaultLocation = path.join("local-db");
  */
 function createCollection(collectionName, callback) {
   // Check if directory exist, create if not
-  
+
   if (!fs.existsSync(defaultLocation)) {
-     fs.mkdirSync(defaultLocation);
+    fs.mkdirSync(defaultLocation);
   }
 
   const fname = path.join(defaultLocation, collectionName + ".json");
-
 
   // Check if the file with the Collection name.json exists
   const exists = fs.existsSync(fname);
@@ -44,9 +41,6 @@ function createCollection(collectionName, callback) {
   }
 }
 
-
-
-
 /**
  * Checks if a json file contains valid JSON string
  * @param {string} dbName - Database name
@@ -63,8 +57,6 @@ function valid(dbName) {
     return false;
   }
 }
-
-
 
 /**
  * Insert object to collection. The object will be appended with the property, id
@@ -95,19 +87,14 @@ function insertOne(collectionName, data, callback) {
       callback(true, data, messages.SAVE_SUCCESS_MESSAGE);
       return id;
     } catch (e) {
-      callback(false, null,  messages.SAVE_ERROR_MESSAGE);
+      callback(false, null, messages.SAVE_ERROR_MESSAGE);
       return;
     }
   }
 
-  callback(false, null,  messages.COLLECTION_NOT_EXISTS);
+  callback(false, null, messages.COLLECTION_NOT_EXISTS);
   return;
 }
-
-
-
-
-
 
 /**
  * Insert objects to collection. Each object will be appended with the property 'id',
@@ -142,7 +129,7 @@ function insertMany(collectionName, data, callback) {
       callback(true, data, messages.SAVE_SUCCESS_MESSAGE);
       return insertedIds;
     } catch (e) {
-      callback(false, null,  messages.SAVE_ERROR_MESSAGE);
+      callback(false, null, messages.SAVE_ERROR_MESSAGE);
       return;
     }
   }
@@ -150,8 +137,6 @@ function insertMany(collectionName, data, callback) {
   callback(false, null, `${collectionName} ${messages.COLLECTION_NOT_EXISTS}`);
   return;
 }
-
-
 
 /**
  * Get all contents of the collection/json file object
@@ -173,13 +158,14 @@ function getAll(collectionName, callback) {
       return;
     }
   } else {
-    callback(false, null,  `${collectionName} ${messages.COLLECTION_NOT_EXISTS}`);
+    callback(
+      false,
+      null,
+      `${collectionName} ${messages.COLLECTION_NOT_EXISTS}`
+    );
     return;
   }
 }
-
-
-
 
 /**
  * Count the number of rows for a given collection.
@@ -196,11 +182,7 @@ function count(collectionName, callback) {
       return;
     }
   });
-
 }
-
-
-
 
 /**
  * Searching function
@@ -240,10 +222,6 @@ function search(collectionName, field, keyword, callback) {
   }
 }
 
-
-
-
-
 /**
  * Find rows of a given field/key.
  * @param {string} collectionName - Collection name
@@ -281,10 +259,6 @@ function getFieldValues(collectionName, key, callback) {
     return;
   }
 }
-
-
-
-
 
 /**
  * Find rows of a given field/key.
@@ -324,10 +298,6 @@ function searchByField(collectionName, key, callback) {
   }
 }
 
-
-
-
-
 /**
  * Get row or rows that matched the given condition(s) in WHERE argument
  * @param {string} collectionName - Collection name
@@ -347,11 +317,11 @@ function filter(collectionName, where, callback) {
       const objs = rows.filter((row) =>
         Object.entries(where).every(([key, value]) => {
           // Handle special operators like $gt (greater than) and $lt (less than)
-          if (typeof value === 'object') {
-            if (value.hasOwnProperty('$gt')) {
-              return row[key] > value['$gt'];
-            } else if (value.hasOwnProperty('$lt')) {
-              return row[key] < value['$lt'];
+          if (typeof value === "object") {
+            if (value.hasOwnProperty("$gt")) {
+              return row[key] > value["$gt"];
+            } else if (value.hasOwnProperty("$lt")) {
+              return row[key] < value["$lt"];
             }
           }
           // Add more condition handlers for other operators if needed
@@ -373,10 +343,6 @@ function filter(collectionName, where, callback) {
   }
 }
 
-
-
-
-
 /**
  * Update a row or record which satisfies the where clause
  * @param {string} collectionName - Collection name
@@ -384,7 +350,7 @@ function filter(collectionName, where, callback) {
  * @param {object} set - Object for SET clause
  * @param {Function} callback - Callback function
  */
-function update(collectionName, where, set, callback) {
+function updateOne(collectionName, where, set, callback) {
   const fname = path.join(defaultLocation, collectionName + ".json");
 
   const exists = fs.existsSync(fname);
@@ -399,9 +365,13 @@ function update(collectionName, where, set, callback) {
       );
 
       if (matchedRow) {
-       const updatedObject =  Object.assign(matchedRow, set);
+        const updatedObject = Object.assign(matchedRow, set);
 
-        fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
+        fs.writeFileSync(
+          fname,
+          JSON.stringify(collection, null, 2),
+          (err) => {}
+        );
         callback(true, updatedObject, messages.UPDATED_SUCCESSFULLY);
         return;
       } else {
@@ -418,10 +388,55 @@ function update(collectionName, where, set, callback) {
   }
 }
 
+/**
+ * Update rows or records which satisfy the where clause
+ * @param {string} collectionName - Collection name
+ * @param {object} where - Object for WHERE clause
+ * @param {object} set - Object for SET clause
+ * @param {Function} callback - Callback function
+ */
+function updateMany(collectionName, where, set, callback) {
+  const fname = path.join(defaultLocation, collectionName + ".json");
 
+  const exists = fs.existsSync(fname);
 
+  if (exists) {
+    try {
+      const collection = JSON.parse(fs.readFileSync(fname));
+      const rows = collection[collectionName];
+      const updatedObjects = [];
 
+      for (let i = 0; i < rows.length; i++) {
+        if (
+          Object.entries(where).every(([key, value]) => rows[i][key] === value)
+        ) {
+          // Matched row, update and add to the result array
+          const updatedObject = Object.assign(rows[i], set);
+          updatedObjects.push(updatedObject);
+        }
+      }
 
+      if (updatedObjects.length > 0) {
+        fs.writeFileSync(
+          fname,
+          JSON.stringify(collection, null, 2),
+          (err) => {}
+        );
+        callback(true, updatedObjects, messages.UPDATED_SUCCESSFULLY);
+        return;
+      } else {
+        callback(false, null, messages.RECORD_NOT_FOUND);
+        return;
+      }
+    } catch (e) {
+      callback(false, null, e.toString());
+      return;
+    }
+  } else {
+    callback(false, null, messages.COLLECTION_NOT_EXISTS);
+    return;
+  }
+}
 
 /**
  * Delete a row specified.
@@ -439,20 +454,22 @@ function deleteOne(collectionName, where, callback) {
       const collection = JSON.parse(fs.readFileSync(fname));
       const rows = collection[collectionName];
       const rowToDelete = rows.find((row) => {
-        return Object.entries(where).every(([key, value]) => row[key] === value);
-      })
+        return Object.entries(where).every(
+          ([key, value]) => row[key] === value
+        );
+      });
       const updatedRows = rows.filter(
         (row) =>
           !Object.entries(where).every(([key, value]) => row[key] === value)
       );
-      
+
       if (updatedRows.length === rows.length) {
         callback(false, null, messages.RECORD_NOT_FOUND);
         return;
       }
 
       collection[collectionName] = updatedRows;
-      
+
       fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
       callback(true, rowToDelete, messages.RECORD_DELETED);
       return;
@@ -465,9 +482,6 @@ function deleteOne(collectionName, where, callback) {
     return;
   }
 }
-
-
-
 
 /**
  * Delete multiple rows specified.
@@ -497,13 +511,11 @@ function deleteMany(collectionName, conditions, callback) {
         return indices;
       }, []);
 
-
       const matchedRows = rows.filter((row) =>
         Object.entries(conditions).every(
           ([key, value]) => row.hasOwnProperty(key) && row[key] === value
         )
       );
-
 
       if (matchedIndices.length === 0) {
         callback(false, messages.RECORD_NOT_FOUND);
@@ -520,7 +532,7 @@ function deleteMany(collectionName, conditions, callback) {
       // Write the object to json file
       fs.writeFileSync(fname, JSON.stringify(collection, null, 2), (err) => {});
 
-      callback(true, matchedRows,  messages.RECORD_DELETED);
+      callback(true, matchedRows, messages.RECORD_DELETED);
       return;
     } catch (e) {
       callback(false, null, e.toString());
@@ -532,8 +544,6 @@ function deleteMany(collectionName, conditions, callback) {
   }
 }
 
-
-
 /**
  * Check collection existence
  * @param {string} dbName - Collection name
@@ -543,11 +553,6 @@ function exists(dbName, defaultLocation) {
   const fName = path.join(defaultLocation, dbName + ".json");
   return fs.existsSync(fName);
 }
-
-
-
-
-
 
 /**
  * Clears an existing table leaving an empty list in the json file.
@@ -565,7 +570,7 @@ function clearCollection(tableName, callback) {
     // Write the object to json file
     try {
       fs.writeFileSync(fname, JSON.stringify(obj, null, 2));
-      callback(true,[],  messages.RECORD_DELETED);
+      callback(true, [], messages.RECORD_DELETED);
       return;
     } catch (e) {
       callback(false, null, e.toString());
@@ -577,13 +582,10 @@ function clearCollection(tableName, callback) {
   }
 }
 
-
-
-
-/**  delete an existing collection/json file 
-* @param {string} collectionName - Collection name
-* @param {Function} callback - Callback function
-*/
+/**  delete an existing collection/json file
+ * @param {string} collectionName - Collection name
+ * @param {Function} callback - Callback function
+ */
 
 function deleteCollection(collectionName, callback) {
   const fname = path.join(defaultLocation, collectionName + ".json");
@@ -605,12 +607,6 @@ function deleteCollection(collectionName, callback) {
   }
 }
 
-
-
-
-
-
-
 // Export the public available functions
 module.exports = {
   createCollection,
@@ -618,7 +614,8 @@ module.exports = {
   insertMany,
   getAll,
   filter,
-  update,
+  updateOne,
+  updateMany,
   searchByField,
   search,
   deleteOne,
@@ -628,5 +625,5 @@ module.exports = {
   count,
   exists,
   clearCollection,
-  deleteCollection
+  deleteCollection,
 };

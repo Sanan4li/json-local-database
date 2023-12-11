@@ -124,12 +124,15 @@ db.insertOne("users", { name: "Sanan", age: 24 }, (success, data, message) => {
 
 ### **Inserting an Array of Objects to a Collection**
 
-The function `db.insertMany()` insert an object into the array of the collection.
+The function `db.insertMany()` insert an array of object into the specified collection.
 
 ```javascript
 db.insertOne(
   collectionName,
-  { name: "Sanan", age: 24 },
+  [
+    { name: "Sanan", age: 24 },
+    { name: "Junaid", age: 32 },
+  ],
   (success, data, message) => {}
 );
 ```

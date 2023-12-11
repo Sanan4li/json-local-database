@@ -1,6 +1,6 @@
 {
   "name": "json-local-database",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JSON local database is like mongoDB database. It's a simple local database that uses JSON files as collections. A perfect solution of electron/node apps that needs a local database.",
   "main": "index.js",
   "scripts": {

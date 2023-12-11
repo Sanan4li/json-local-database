@@ -52,7 +52,7 @@ const db = require("json-local-database");
 
 ### **Creating a collection**
 
-The function `createCollection()` creates a json file `[collection].json` inside the application `json-local-database` folder. It will return an error if the collection/json file is already created.
+The function `createCollection()` creates a json file `[collection].json` inside the application `local-db` folder. It will return an error if the collection/json file is already created.
 
 ```javascript
 db.createCollection(dbName, callback(success, message)=>{});

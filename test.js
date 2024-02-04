@@ -1,10 +1,10 @@
 const db = require("./index");
 
-const dbName = "users";
+const collectionName = "users";
 
 // Create a collection
 
-// db.createCollection(dbName, (success, message) => {
+// db.createCollection(collectionName, (success, message) => {
 //     if (success) {
 //         console.log(message);
 //     } else {
@@ -15,7 +15,7 @@ const dbName = "users";
 // Adding some dummy data
 
 //  adding data with insertOne
-// db.insertOne(dbName, { name: "Sanan", age: 24 }, (success, data, message) => {
+// db.insertOne(collectionName, { name: "Sanan", age: 24 }, (success, data, message) => {
 //   if (success) {
 //     console.log(data, message);
 //   }

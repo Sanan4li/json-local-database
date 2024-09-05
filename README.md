@@ -127,7 +127,7 @@ db.insertOne("users", { name: "Sanan", age: 24 }, (success, data, message) => {
 The function `db.insertMany()` insert an array of object into the specified collection.
 
 ```javascript
-db.insertOne(
+db.insertMany(
   collectionName,
   [
     { name: "Sanan", age: 24 },
@@ -212,7 +212,7 @@ db.getAll("users", (success, data, message) => {
 The function `db.count()` finds the count of all the saved objects from the collection and returns the count.
 
 ```javascript
-db.count(collectionName, (success, data, message) => {});
+db.count(collectionName, (success, count, message) => {});
 ```
 
 #### Example
@@ -220,9 +220,9 @@ db.count(collectionName, (success, data, message) => {});
 To get the count of all the data from the collection, use the `count()` function. The function accepts 2 parameters, the collection name and the callback function.
 
 ```javascript
-db.count("users", (success, data, message) => {
+db.count("users", (success, count, message) => {
   if (success) {
-    console.log(data);
+    console.log(count);
   } else {
     console.log("error. ", message);
   }
@@ -231,7 +231,7 @@ db.count("users", (success, data, message) => {
 /*
   Output:
     	Success: true
-        data: 2
+        count: 2
         Message: Success or Error Message if any
 
 */
